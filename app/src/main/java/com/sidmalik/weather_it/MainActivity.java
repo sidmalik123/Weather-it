@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.squareup.okhttp.Call;
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mHumidityLabel;
     private TextView mPrecipLabel;
     private ImageView mRefreshButton;
+    private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         makeViewConnections();
+        mProgressBar.setVisibility(View.INVISIBLE);
         mRefreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -62,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         mSummary = (TextView) findViewById(R.id.summaryLabel);
         mTimeLabel = (TextView) findViewById(R.id.timeLabel);
         mRefreshButton = (ImageView) findViewById(R.id.refreshButton);
-
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
     }
 
     private void updateView() {
@@ -106,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         double lat = 28.6139;
         double longt = 77.2090;
         if(isNetworkAvailable()) {
+            toggleRefresh();
             String forecastUrl = "https://api.darksky.net/forecast/"+apiKey+"/"+lat+","+longt;
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder().url(forecastUrl).build();
@@ -129,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     updateView();
+                                    toggleRefresh();
                                 }
                             });
 
@@ -146,6 +151,16 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+    }
+
+    private void toggleRefresh(){
+        if(mProgressBar.getVisibility() == View.VISIBLE){
+            mProgressBar.setVisibility(View.INVISIBLE);
+            mRefreshButton.setVisibility(View.VISIBLE);
+        }else{
+            mProgressBar.setVisibility(View.VISIBLE);
+            mRefreshButton.setVisibility(View.INVISIBLE);
+        }
     }
 
 
