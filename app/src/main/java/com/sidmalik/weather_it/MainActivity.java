@@ -2,6 +2,7 @@ package com.sidmalik.weather_it;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mPrecipLabel;
     private ImageView mRefreshButton;
     private ProgressBar mProgressBar;
+    private ImageView mIconView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         mTimeLabel = (TextView) findViewById(R.id.timeLabel);
         mRefreshButton = (ImageView) findViewById(R.id.refreshButton);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+        mIconView = (ImageView) findViewById(R.id.iconImageView);
     }
 
     private void updateView() {
@@ -74,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         mSummary.setText(mCurrWeather.getSummary());
         mHumidityLabel.setText(mCurrWeather.getHumidity()+"");
         mPrecipLabel.setText(mCurrWeather.getPrecip()+"");
-//        mLocationLabel.setText(mCurrWeather.getLocation());
+        mIconView.setImageResource(mCurrWeather.getIconId());
 
     }
 
@@ -87,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
             int temp = (int)jsonResp.getJSONObject("currently").getDouble("temperature");
             mCurrWeather.setTemp(temp);
             mCurrWeather.setTimezone(jsonResp.getString("timezone"));
+            mCurrWeather.setIcon(jsonResp.getJSONObject("currently").getString("icon"));
         }catch(JSONException e){
             alertUserAboutError();
         }
