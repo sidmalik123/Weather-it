@@ -28,8 +28,13 @@ import java.io.IOException;
 
 
 public class MainActivity extends AppCompatActivity {
-
+    // consants
+    private final double DELHI_LAT = 28.6139;
+    private final double DELHI_LONG = 77.2090;
+    private final String API_KEY = "f774a78633d214b87a8c2832e40dd59e";
+    private final String FORECAST_URL = "https://api.darksky.net/forecast/";
     public static final String TAG = MainActivity.class.getSimpleName();
+    // other members
     private CurrentWeather mCurrWeather = new CurrentWeather();
     private TextView mTempLabel;
     private TextView mTimeLabel;
@@ -83,14 +88,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateCurrWeather(JSONObject jsonResp) {
         try {
-            mCurrWeather.setSummary(jsonResp.getJSONObject("currently").getString("summary"));
-            mCurrWeather.setTime(jsonResp.getJSONObject("currently").getLong("time"));
-            mCurrWeather.setHumidity(jsonResp.getJSONObject("currently").getDouble("humidity"));
-            mCurrWeather.setPrecip(jsonResp.getJSONObject("currently").getDouble("precipProbability"));
-            int temp = (int)jsonResp.getJSONObject("currently").getDouble("temperature");
+            JSONObject currently = jsonResp.getJSONObject("currently");
+            mCurrWeather.setSummary(currently.getString("summary"));
+            mCurrWeather.setTime(currently.getLong("time"));
+            mCurrWeather.setHumidity(currently.getDouble("humidity"));
+            mCurrWeather.setPrecip(currently.getDouble("precipProbability"));
+            int temp = (int)currently.getDouble("temperature");
             mCurrWeather.setTemp(temp);
             mCurrWeather.setTimezone(jsonResp.getString("timezone"));
-            mCurrWeather.setIcon(jsonResp.getJSONObject("currently").getString("icon"));
+            mCurrWeather.setIcon(currently.getString("icon"));
         }catch(JSONException e){
             alertUserAboutError();
         }
@@ -109,12 +115,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getForecast(){
-        String apiKey = "f774a78633d214b87a8c2832e40dd59e";
-        double lat = 28.6139;
-        double longt = 77.2090;
+
         if(isNetworkAvailable()) {
             toggleRefresh();
-            String forecastUrl = "https://api.darksky.net/forecast/"+apiKey+"/"+lat+","+longt;
+            String forecastUrl = FORECAST_URL+API_KEY+"/"+DELHI_LAT+","+DELHI_LONG;
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder().url(forecastUrl).build();
             Call call = client.newCall(request);

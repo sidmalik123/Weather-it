@@ -10,6 +10,8 @@ public class Weather {
     private double mTemp;
     private String mSummary;
     private String mTimezone;
+    private double mTempMax;
+    private double mTempMin;
 
     public long getTime() {
         return mTime;
@@ -47,6 +49,22 @@ public class Weather {
 
     public void setTimezone(String timezone) {
         mTimezone = timezone;
+    }
+
+    public double getTempMax() {
+        return mTempMax;
+    }
+
+    public void setTempMax(double tempMax) {
+        mTempMax = tempMax;
+    }
+
+    public double getTempMin() {
+        return mTempMin;
+    }
+
+    public void setTempMin(double tempMin) {
+        mTempMin = tempMin;
     }
 
     // methods with added functionalities
