@@ -1,4 +1,6 @@
-package com.sidmalik.weather_it;
+package com.sidmalik.weather_it.model;
+
+import com.sidmalik.weather_it.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
