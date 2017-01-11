@@ -12,12 +12,15 @@ import android.widget.TextView;
 
 import com.sidmalik.weather_it.R;
 import com.sidmalik.weather_it.model.CurrentWeather;
+import com.sidmalik.weather_it.model.DayWeather;
+import com.sidmalik.weather_it.model.HourWeather;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,8 +35,12 @@ public class MainActivity extends AppCompatActivity {
     private final String API_KEY = "f774a78633d214b87a8c2832e40dd59e";
     private final String FORECAST_URL = "https://api.darksky.net/forecast/";
     public static final String TAG = MainActivity.class.getSimpleName();
-    // other members
+    // other members:
+    // 1. model members
     private CurrentWeather mCurrWeather = new CurrentWeather();
+    private HourWeather[] mHourlyWeather = null;
+    private DayWeather[] mDailyWeather= null;
+    // 2. views
     private TextView mTempLabel;
     private TextView mTimeLabel;
     private TextView mSummary;
@@ -84,21 +91,55 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void updateCurrWeather(JSONObject jsonResp) {
-        try {
-            JSONObject currently = jsonResp.getJSONObject("currently");
-            mCurrWeather.setSummary(currently.getString("summary"));
-            mCurrWeather.setTime(currently.getLong("time"));
-            mCurrWeather.setHumidity(currently.getDouble("humidity"));
-            mCurrWeather.setPrecip(currently.getDouble("precipProbability"));
-            int temp = (int)currently.getDouble("temperature");
-            mCurrWeather.setTemp(temp);
-            mCurrWeather.setTimezone(jsonResp.getString("timezone"));
-            mCurrWeather.setIcon(currently.getString("icon"));
-        }catch(JSONException e){
-            alertUserAboutError();
+    private void updateHourlyWeather(JSONObject jsonResp) throws  JSONException{
+        String timezone = jsonResp.getString("timezone");
+        JSONArray data = jsonResp.getJSONObject("hourly").getJSONArray("data");
+        int len = data.length();
+        if(mHourlyWeather == null) mHourlyWeather = new HourWeather[len];
+
+        for(int i = 0; i < len; ++i){
+            JSONObject hour = data.getJSONObject(i);
+            mHourlyWeather[i] = new HourWeather();
+            mHourlyWeather[i].setTemp(hour.getDouble("temperature"));
+            mHourlyWeather[i].setSummary(hour.getString("summary"));
+            mHourlyWeather[i].setIcon(hour.getString("icon"));
+            mHourlyWeather[i].setTime(hour.getLong("time"));
+            mHourlyWeather[i].setTimezone(timezone);
         }
     }
+
+    private void updateCurrWeather(JSONObject jsonResp) throws JSONException {
+        JSONObject currently = jsonResp.getJSONObject("currently");
+        mCurrWeather.setSummary(currently.getString("summary"));
+        mCurrWeather.setTime(currently.getLong("time"));
+        mCurrWeather.setHumidity(currently.getDouble("humidity"));
+        mCurrWeather.setPrecip(currently.getDouble("precipProbability"));
+        int temp = (int)currently.getDouble("temperature");
+        mCurrWeather.setTemp(temp);
+        mCurrWeather.setTimezone(jsonResp.getString("timezone"));
+        mCurrWeather.setIcon(currently.getString("icon"));
+
+    }
+
+    private void updateDailyWeather(JSONObject jsonResp) throws JSONException {
+        String timezone = jsonResp.getString("timezone");
+        JSONArray data = jsonResp.getJSONObject("daily").getJSONArray("data");
+        int len = data.length();
+        if(mDailyWeather == null) mHourlyWeather = new HourWeather[len];
+
+        for(int i = 0; i < len; ++i){
+            JSONObject hour = data.getJSONObject(i);
+            mDailyWeather[i] = new DayWeather();
+            mDailyWeather[i].setTempMax(hour.getDouble("temperatureMax"));
+            mDailyWeather[i].setTempMin(hour.getDouble("temperatureMin"));
+            mDailyWeather[i].setSummary(hour.getString("summary"));
+            mDailyWeather[i].setIcon(hour.getString("icon"));
+            mDailyWeather[i].setTime(hour.getLong("time"));
+            mDailyWeather[i].setTimezone(timezone);
+        }
+
+    }
+
 
     private boolean isNetworkAvailable() {
         ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -135,6 +176,8 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject jsonResp = new JSONObject(jsonString);
                             // set object's weather related fields here
                             updateCurrWeather(jsonResp);
+                            updateHourlyWeather(jsonResp);
+                            updateDailyWeather(jsonResp);
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -160,6 +203,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+
 
     private void toggleRefresh(){
         if(mProgressBar.getVisibility() == View.VISIBLE){
